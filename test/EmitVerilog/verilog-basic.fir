@@ -32,7 +32,7 @@ circuit inputs_only :
     out1 <= xorr(in4)
     out1 <= andr(in4)
     out1 <= orr(in4)
-    out1 <= not(in4)
+    out4 <= not(in4)
     out4 <= rem(in4, UInt<4>("h1"))
     out1 <= asUInt(clock)
     out1 <= asUInt(asClock(UInt<1>("h1")))
@@ -78,7 +78,7 @@ circuit inputs_only :
 ; CHECK-NEXT:     assign out1 = ^in4;
 ; CHECK-NEXT:     assign out1 = &in4;
 ; CHECK-NEXT:     assign out1 = |in4;
-; CHECK-NEXT:     assign out1 = ~in4;
+; CHECK-NEXT:     assign out4 = ~in4;
 ; CHECK-NEXT:     assign out4 = in4 % 4'h1;
 ; CHECK-NEXT:     assign out1 = clock;
 ; CHECK-NEXT:     assign out1 = 1'h1;
@@ -103,7 +103,7 @@ circuit inputs_only :
     input b: UInt<4>
     input c: UInt<4>
     output out1: UInt<1>
-    output out: UInt<4>
+    output out: UInt<10>
     out <= add(a, add(b, c))
     out <= sub(add(a, b), c)
     out <= sub(a, add(b, c))
@@ -114,14 +114,14 @@ circuit inputs_only :
     out <= mul(add(a, b), add(b, c))
     out1 <= xorr(add(b, c))
     out1 <= or(lt(b, c), gt(b, c))
-    out1 <= and(xor(b, c), or(out1, out1))
-    out1 <= shr(out, 2)
+    out <= and(xor(b, c), or(out1, out1))
+    out <= shr(out, 2)
     out1 <= lt(out, a)
 
 ; CHECK-LABEL: module Precedence(
 ; CHECK-NEXT:     input  [3:0] a, b, c,
 ; CHECK-NEXT:     output       out1,
-; CHECK-NEXT:     output [3:0] out);
+; CHECK-NEXT:     output [9:0] out);
 ; CHECK-EMPTY:
 
 ; CHECK-NEXT:     assign out = a + b + c;
@@ -134,8 +134,8 @@ circuit inputs_only :
 ; CHECK-NEXT:     assign out = (a + b) * (b + c);
 ; CHECK-NEXT:     assign out1 = ^(b + c);
 ; CHECK-NEXT:     assign out1 = b < c | b > c;
-; CHECK-NEXT:     assign out1 = (b ^ c) & (out1 | out1);
-; CHECK-NEXT:     assign out1 = out[3:2];
+; CHECK-NEXT:     assign out = (b ^ c) & (out1 | out1);
+; CHECK-NEXT:     assign out = out[9:2];
 ; CHECK-NEXT:     assign out1 = out < a;
 ; CHECK-NEXT:  endmodule
 
@@ -235,11 +235,11 @@ circuit inputs_only :
 
 ; CHECK-LABEL: module MultiUseExpr(
 ; CHECK-NEXT:    input  [3:0] a,
-; CHECK-NEXT:    output       b);
+; CHECK-NEXT:    output [1:0] b);
 ; CHECK-EMPTY:
   module MultiUseExpr :
     input a: UInt<4>
-    output b: UInt<1>
+    output b: UInt<2>
     ;; These node decls disappear in MLIR because of the _T name.  The verilog
     ;; emitter needs to reintroduce it as an 'assign' to a local.
 
@@ -638,7 +638,7 @@ circuit inputs_only :
   ; CHECK-LABEL: module Locations(
   module Locations :
     input a: UInt<4>
-    output b: UInt<4>
+    output b: UInt<12>
     node _T_1 = add(a, a)                 @[Place.scala 101:13]
     node _T_2 = add(_T_1, UInt<4>("h3"))  @[Other.scala 51:15]
     b <= xor(_T_2, UInt<4>("h11"))        @[Place.scala 101:15]
