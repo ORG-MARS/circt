@@ -464,7 +464,7 @@ public:
 StringRef ModuleEmitter::addName(sv::GetModportOp modport) {
   SmallString<16> tmpName(getName(modport.iface()));
   tmpName += '.';
-  tmpName +=  modport.field();
+  tmpName += modport.field();
   return addName(modport, tmpName);
 }
 
